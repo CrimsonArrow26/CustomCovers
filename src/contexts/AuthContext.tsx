@@ -219,15 +219,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return;
     setLoading(true);
     setError(null);
+    
+    // For production, use the current domain
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    
+    console.log('Google OAuth redirect URL:', redirectUrl);
+    console.log('Current origin:', window.location.origin);
+    console.log('Environment:', import.meta.env.MODE);
+    console.log('Is production:', !import.meta.env.DEV);
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+      options: { 
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
+      }
     });
+    
     if (error) {
+      console.error('Google OAuth error:', error);
       setError(error.message);
       setLoading(false);
       return;
     }
+    
+    console.log('Google OAuth initiated successfully');
     // After redirect, handle session in callback page
     setLoading(false);
   };

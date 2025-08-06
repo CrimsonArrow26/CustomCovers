@@ -20,6 +20,9 @@ import { WishlistPage } from './pages/WishlistPage'
 import { ChangePasswordPage } from './pages/auth/ChangePasswordPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { DebugAuth } from './components/ui/DebugAuth'
+import { GoogleOAuthDebug } from './components/ui/GoogleOAuthDebug'
+import { ProductionOAuthDebug } from './components/ui/ProductionOAuthDebug'
+import { ProductionDomainDebug } from './components/ui/ProductionDomainDebug'
 import { StickersPage } from './pages/StickersPage'
 import { PostersPage } from './pages/PostersPage'
 import { CoversPage } from './pages/CoversPage'
@@ -86,6 +89,9 @@ function AppContent() {
             <Route path="/posters" element={<PostersPage />} />
             <Route path="/covers" element={<CoversPage />} />
             <Route path="/debug" element={<DebugAuth />} />
+            <Route path="/debug-oauth" element={<GoogleOAuthDebug />} />
+            <Route path="/debug-production-oauth" element={<ProductionOAuthDebug />} />
+            <Route path="/debug-domain" element={<ProductionDomainDebug />} />
           </Routes>
         </main>
         <Footer />
