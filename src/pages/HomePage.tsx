@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Star, TrendingUp, Shield, Truck } from 'lucide-react'
-import { supabase, Product } from '../lib/supabase'
+import { getSupabaseClient, Product } from '../lib/supabase'
 import { ProductGrid } from '../components/products/ProductGrid'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -11,12 +11,25 @@ export function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
+
+  // Preload hero and category images for instant display
   useEffect(() => {
-    fetchFeaturedProducts()
+    fetchFeaturedProducts();
+    const imageUrls = [
+      '/main.jpg',
+      '/1.jpg',
+      '/2.jpg',
+      '/3.jpg'
+    ];
+    imageUrls.forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+    });
   }, [])
 
   const fetchFeaturedProducts = async () => {
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -35,19 +48,19 @@ export function HomePage() {
   const categories = [
     {
       name: 'Stickers',
-      image: 'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
+      image: '/1.jpg',
       link: '/stickers',
       gradient: 'from-pink-500 to-rose-500'
     },
     {
       name: 'Posters',
-      image: 'https://images.pexels.com/photos/1047540/pexels-photo-1047540.jpeg',
+      image: '/2.jpg',
       link: '/posters',
       gradient: 'from-purple-500 to-pink-500'
     },
     {
       name: 'Phone Covers',
-      image: 'https://images.pexels.com/photos/163129/phone-mobile-smartphone-cellular-163129.jpeg',
+      image: '/3.jpg',
       link: '/covers',
       gradient: 'from-rose-500 to-orange-500'
     }
@@ -122,7 +135,7 @@ export function HomePage() {
             >
               <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://images.pexels.com/photos/147411/italy-mobile-phone-phone-card-147411.jpeg"
+                  src="/main.jpg"
                   alt="Featured Products"
                   className="w-full h-full object-cover"
                 />
@@ -134,7 +147,6 @@ export function HomePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">4.9/5 Stars</p>
-                    <p className="text-sm text-gray-600">10,000+ Reviews</p>
                   </div>
                 </div>
               </div>

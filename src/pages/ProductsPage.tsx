@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Filter, Search, SlidersHorizontal } from 'lucide-react'
-import { supabase, Product } from '../lib/supabase'
+import { getSupabaseClient, Product } from '../lib/supabase'
 import { ProductGrid } from '../components/products/ProductGrid'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -27,6 +27,7 @@ export function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
+      const supabase = getSupabaseClient();
       let query = supabase.from('products').select('*')
 
       // Apply filters

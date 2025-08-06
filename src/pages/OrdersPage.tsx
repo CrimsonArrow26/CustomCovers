@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Package, Calendar, MapPin, CreditCard } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase, Order } from '../lib/supabase'
+import { getSupabaseClient, Order } from '../lib/supabase'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 
@@ -19,6 +19,7 @@ export function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('orders')
         .select(`

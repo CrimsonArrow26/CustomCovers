@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
+import { getSupabaseClient } from '../../lib/supabase'
 
 export function DebugAuth() {
   const { user, loading } = useAuth()
@@ -8,6 +8,7 @@ export function DebugAuth() {
   const [allUsers, setAllUsers] = useState<any[]>([])
 
   useEffect(() => {
+    const supabase = getSupabaseClient();
     // Test Supabase connection
     const testConnection = async () => {
       try {

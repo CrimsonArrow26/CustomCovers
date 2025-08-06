@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Bell, Package, Users, TrendingUp, Eye, Check, X, Upload, Trash2, Plus, ShoppingCart } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { getSupabaseClient } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -43,6 +43,7 @@ export function AdminDashboard() {
       fetchCatalogProducts()
       
       // Subscribe to new orders
+      const supabase = getSupabaseClient();
       const ordersSubscription = supabase
         .channel('orders')
         .on('postgres_changes', {
@@ -85,6 +86,7 @@ export function AdminDashboard() {
   const fetchOrders = async () => {
     console.log('Fetching orders...')
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -107,6 +109,7 @@ export function AdminDashboard() {
   const fetchStats = async () => {
     console.log('Fetching stats...')
     try {
+      const supabase = getSupabaseClient();
       // Get total orders
       const { count: totalOrders } = await supabase
         .from('orders')
@@ -147,6 +150,7 @@ export function AdminDashboard() {
 
   const fetchCatalogProducts = async () => {
     console.log('Fetching products for category:', catalogCategory)
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -175,10 +179,11 @@ export function AdminDashboard() {
     try {
       if (productImage) {
         try {
-          // Upload to Supabase Storage using admin client
+          // Upload to Supabase Storage using the same client
+          const supabase = getSupabaseClient();
           const fileExt = productImage.name.split('.').pop()
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
-          const { data, error } = await supabaseAdmin.storage.from('product-images').upload(fileName, productImage)
+          const { data, error } = await supabase.storage.from('product-images').upload(fileName, productImage)
           if (error) {
             console.error('Storage upload error:', error)
             // Use a placeholder image if storage fails
@@ -186,7 +191,7 @@ export function AdminDashboard() {
             toast.error('Storage bucket not configured. Using placeholder image. Please set up Supabase Storage.')
           } else {
             // Get public URL
-            const { data: publicUrlData } = supabaseAdmin.storage.from('product-images').getPublicUrl(fileName)
+            const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(fileName)
             imageUrl = publicUrlData.publicUrl
           }
         } catch (storageError) {
@@ -196,8 +201,9 @@ export function AdminDashboard() {
           toast.error('Storage not available. Using placeholder image.')
         }
       }
-      
+
       // Insert into products table
+      const supabase = getSupabaseClient();
       const { error: insertError } = await supabase.from('products').insert([
         {
           name: productName,
@@ -224,6 +230,7 @@ export function AdminDashboard() {
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('orders')
         .update({ status })
@@ -246,6 +253,7 @@ export function AdminDashboard() {
     }
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('products')
         .delete()

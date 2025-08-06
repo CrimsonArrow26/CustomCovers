@@ -4,7 +4,7 @@ import { CreditCard, Truck, MapPin, Plus, Check, Copy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
-import { supabase, Address } from '../lib/supabase'
+import { getSupabaseClient, Address } from '../lib/supabase'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -53,6 +53,7 @@ export function CheckoutPage() {
 
   const fetchAddresses = async () => {
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('addresses')
         .select('*')
@@ -61,7 +62,6 @@ export function CheckoutPage() {
 
       if (error) throw error
       setAddresses(data || [])
-      
       // Select default address
       const defaultAddr = data?.find(addr => addr.is_default)
       if (defaultAddr) {
@@ -77,6 +77,7 @@ export function CheckoutPage() {
     if (!user) return
 
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('addresses')
         .insert([{ ...newAddress, user_id: user.id }])
@@ -84,7 +85,6 @@ export function CheckoutPage() {
         .single()
 
       if (error) throw error
-      
       setAddresses([...addresses, data])
       setSelectedAddress(data.id)
       setShowAddressForm(false)
@@ -118,6 +118,7 @@ export function CheckoutPage() {
 
     setLoading(true)
     try {
+      const supabase = getSupabaseClient();
       // Create order
       const orderData = {
         user_id: user?.id,

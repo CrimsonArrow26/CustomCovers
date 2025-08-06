@@ -25,6 +25,7 @@ interface AuthContextType {
   error: string | null;
   orders: Order[];
   ordersLoading: boolean;
+  isAdmin: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -128,15 +129,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     if (data.user) {
-      // Create or update user record
-      await supabase.from('users').upsert([
-        {
-          id: data.user.id,
+      // Only set role to 'user' if user does not exist yet
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', data.user.id)
+        .single();
+      if (!existingUser) {
+        await supabase.from('users').insert([
+          {
+            id: data.user.id,
+            email: data.user.email,
+            full_name: fullName,
+            role: 'user'
+          }
+        ]);
+      } else {
+        // Update name/email only, do not overwrite role
+        await supabase.from('users').update({
           email: data.user.email,
-          full_name: fullName,
-          role: 'user'
-        }
-      ]);
+          full_name: fullName
+        }).eq('id', data.user.id);
+      }
     }
     setLoading(false);
     // Redirect to sign-in page (handled in page logic)
@@ -202,14 +216,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event: string, session: any) => {
         if (event === 'SIGNED_IN' && session?.user) {
           // Unified user record: upsert with Google info
-          await supabase.from('users').upsert([
-            {
-              id: session.user.id,
+          // Only set role to 'user' if user does not exist yet
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
+          if (!existingUser) {
+            await supabase.from('users').insert([
+              {
+                id: session.user.id,
+                email: session.user.email,
+                full_name: session.user.user_metadata?.full_name || session.user.email,
+                role: 'user'
+              }
+            ]);
+          } else {
+            // Update name/email only, do not overwrite role
+            await supabase.from('users').update({
               email: session.user.email,
-              full_name: session.user.user_metadata?.full_name || session.user.email,
-              role: 'user'
-            }
-          ]);
+              full_name: session.user.user_metadata?.full_name || session.user.email
+            }).eq('id', session.user.id);
+          }
           const userData = await fetchUser(session.user.id);
           setUser(userData);
         } else if (event === 'SIGNED_OUT') {
@@ -220,12 +248,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const isAdmin = user?.role === 'admin';
   const value: AuthContextType = {
     user,
     loading,
     error,
     orders,
     ordersLoading,
+    isAdmin,
     signUp,
     signIn,
     signInWithGoogle,

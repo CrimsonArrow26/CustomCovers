@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { supabase, WishlistItem } from '../lib/supabase'
+import { getSupabaseClient, WishlistItem } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import toast from 'react-hot-toast'
 
@@ -39,6 +39,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('wishlist')
         .select(`
@@ -64,6 +65,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('wishlist')
         .insert([{ user_id: user.id, product_id: productId }])
@@ -89,6 +91,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
+      const supabase = getSupabaseClient();
       const { error } = await supabase
         .from('wishlist')
         .delete()

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Filter, Grid, List } from 'lucide-react'
-import { supabase, Product } from '../lib/supabase'
+import { getSupabaseClient, Product } from '../lib/supabase'
 import { ProductGrid } from '../components/products/ProductGrid'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -30,6 +30,7 @@ export function CategoryPage({ category, title, description }: CategoryPageProps
   const fetchProducts = async () => {
     try {
       setLoading(true)
+      const supabase = getSupabaseClient();
       let query = supabase
         .from('products')
         .select('*')

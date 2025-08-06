@@ -8,7 +8,11 @@ import { Button } from '../components/ui/Button'
 import toast from 'react-hot-toast'
 
 export function ProfilePage() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  }
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
 
@@ -142,6 +146,15 @@ export function ProfilePage() {
                 >
                   <MapPin size={16} />
                   <span>Addresses</span>
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="w-full flex items-center justify-center space-x-2"
+                  onClick={handleSignOut}
+                >
+                  <Lock size={16} />
+                  <span>Sign Out</span>
                 </Button>
               </div>
             </Card>

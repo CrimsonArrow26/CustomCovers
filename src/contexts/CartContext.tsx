@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { Product, supabase } from '../lib/supabase'
+import { Product, getSupabaseClient } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import toast from 'react-hot-toast'
 
@@ -51,6 +51,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
+      const supabase = getSupabaseClient();
       const { data, error } = await supabase
         .from('cart')
         .select(`
@@ -84,6 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Clear existing cart items
+      const supabase = getSupabaseClient();
       await supabase
         .from('cart')
         .delete()
@@ -97,6 +99,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           quantity: item.quantity
         }))
 
+        const supabase = getSupabaseClient();
         const { error } = await supabase
           .from('cart')
           .insert(cartData)
@@ -182,6 +185,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     // Clear from database if user is authenticated
     if (user) {
       try {
+        const supabase = getSupabaseClient();
         await supabase
           .from('cart')
           .delete()

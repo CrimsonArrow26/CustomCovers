@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import { getSupabaseClient } from '../../lib/supabase'
 import { Card } from '../../components/ui/Card'
 import toast from 'react-hot-toast'
 
@@ -10,6 +10,7 @@ export function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        const supabase = getSupabaseClient();
         const { data, error } = await supabase.auth.getSession()
         
         if (error) {

@@ -49,8 +49,7 @@ if (import.meta.env.DEV) {
   loadConfig()
 }
 
-// Export client
-export const supabase = supabaseClient
+// Do NOT export supabase directly. Always use getSupabaseClient() to ensure client is initialized.
 
 // Function to get initialized client
 export const getSupabaseClient = () => {
