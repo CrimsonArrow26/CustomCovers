@@ -30,6 +30,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  changePassword: (newPassword: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshOrders: () => Promise<void>;
 }
@@ -117,6 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line
   }, [user]);
   // ...existing code...
+
+  // Change password
+  const changePassword = async (newPassword: string) => {
+    setLoading(true);
+    setError(null);
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      setError(error.message);
+    }
+    setLoading(false);
+  };
 
   // Fetch user from users table
   const fetchUser = async (id: string) => {
@@ -275,6 +287,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signInWithGoogle,
     signOut,
+    changePassword,
     refreshUser,
     refreshOrders,
   };

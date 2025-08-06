@@ -19,8 +19,14 @@ export function ChangePasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  // Redirect if not logged in
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login')
+    }
+  }, [user, navigate])
+
   if (!user) {
-    navigate('/login')
     return null
   }
 
