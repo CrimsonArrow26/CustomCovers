@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getSupabaseClient } from '../lib/supabase';
+import { getSupabaseClient, supabaseReadyPromise } from '../lib/supabase';
 
 export interface User {
   id: string;
@@ -51,6 +51,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [supabaseReady, setSupabaseReady] = useState(import.meta.env.DEV ? true : false);
+
+  // Wait for Supabase client to be ready in production
+  useEffect(() => {
+    if (import.meta.env.DEV) return;
+    let cancelled = false;
+    supabaseReadyPromise.then(() => {
+      if (!cancelled) setSupabaseReady(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!supabaseReady) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>;
+  }
   const supabase = getSupabaseClient();
   // Fetch all orders for current user
   const refreshOrders = async () => {

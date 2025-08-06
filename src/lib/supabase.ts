@@ -9,6 +9,12 @@ let SUPABASE_CONFIG = {
 // Client will be created after configuration is loaded
 let supabaseClient: any = null
 
+// Promise that resolves when supabaseClient is ready
+let supabaseReadyResolve: (() => void) | null = null;
+export const supabaseReadyPromise: Promise<void> = new Promise((resolve) => {
+  supabaseReadyResolve = resolve;
+});
+
 // Function to initialize Supabase with runtime values
 export const initializeSupabase = (url: string, anonKey: string) => {
   SUPABASE_CONFIG.url = url
@@ -21,6 +27,7 @@ export const initializeSupabase = (url: string, anonKey: string) => {
       detectSessionInUrl: true
     }
   })
+  if (supabaseReadyResolve) supabaseReadyResolve();
 }
 
 // Initialize with environment variables for development only
