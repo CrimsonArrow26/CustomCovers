@@ -41,22 +41,31 @@ if (import.meta.env.DEV) {
     initializeSupabase(url, anonKey)
   }
 } else {
-  // In production, fetch from serverless function
+  // In production, auto-detect Vercel or Netlify and fetch from the correct serverless function
+  const getConfigEndpoint = () => {
+    // Vercel sets VERCEL env, Netlify sets NETLIFY env
+    if (typeof process !== 'undefined' && process.env && process.env.VERCEL) {
+      return '/api/get-config';
+    }
+    // Default to Netlify
+    return '/.netlify/functions/get-config';
+  };
   const loadConfig = async () => {
     try {
-      const response = await fetch('/.netlify/functions/get-config')
+      const endpoint = getConfigEndpoint();
+      const response = await fetch(endpoint);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const config = await response.json()
-      console.log('Loaded config:', { url: config.supabaseUrl, hasAnonKey: !!config.supabaseAnonKey })
-      initializeSupabase(config.supabaseUrl, config.supabaseAnonKey)
+      const config = await response.json();
+      console.log('Loaded config:', { url: config.supabaseUrl, hasAnonKey: !!config.supabaseAnonKey });
+      initializeSupabase(config.supabaseUrl, config.supabaseAnonKey);
     } catch (error) {
-      console.error('Failed to load Supabase configuration:', error)
+      console.error('Failed to load Supabase configuration:', error);
       // No fallback in production - must use serverless function
     }
-  }
-  loadConfig()
+  };
+  loadConfig();
 }
 
 // Do NOT export supabase directly. Always use getSupabaseClient() to ensure client is initialized.
