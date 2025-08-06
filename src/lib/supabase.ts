@@ -27,7 +27,10 @@ export const initializeSupabase = (url: string, anonKey: string) => {
       detectSessionInUrl: true
     }
   })
-  if (supabaseReadyResolve) supabaseReadyResolve();
+  if (supabaseReadyResolve) {
+    supabaseReadyResolve();
+    supabaseReadyResolve = null;
+  }
 }
 
 // Initialize with environment variables for development only
