@@ -64,13 +64,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, []);
 
-  if (!supabaseReady) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>;
-  }
-  const supabase = getSupabaseClient();
+  // Get Supabase client - this is safe to call conditionally
+  const supabase = supabaseReady ? getSupabaseClient() : null;
   // Fetch all orders for current user
   const refreshOrders = async () => {
-    if (!user) {
+    if (!user || !supabase) {
       setOrders([]);
       return;
     }
@@ -90,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
   // Refresh user from session
   const refreshUser = async () => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -121,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Change password
   const changePassword = async (newPassword: string) => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.updateUser({ password: newPassword });
@@ -132,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch user from users table
   const fetchUser = async (id: string) => {
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('users')
       .select('id, email, full_name, role')
@@ -143,6 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign up with email/password
   const signUp = async (email: string, password: string, fullName: string) => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.signUp({
@@ -185,6 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in with email/password
   const signIn = async (email: string, password: string) => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -213,6 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in/up with Google
   const signInWithGoogle = async () => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -230,6 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out
   const signOut = async () => {
+    if (!supabase) return;
     setLoading(true);
     setError(null);
     await supabase.auth.signOut();
@@ -239,6 +244,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for auth state changes (for Google callback)
   useEffect(() => {
+    if (!supabase) return;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: string, session: any) => {
         if (event === 'SIGNED_IN' && session?.user) {
@@ -273,7 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   const isAdmin = user?.role === 'admin';
   const value: AuthContextType = {
@@ -291,6 +297,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser,
     refreshOrders,
   };
+
+  // Show loading state while Supabase is initializing
+  if (!supabaseReady) {
+    return (
+      <AuthContext.Provider value={value}>
+        <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>
+      </AuthContext.Provider>
+    );
+  }
 
   // Always render children, expose loading/error in context for use in pages/components
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
