@@ -41,19 +41,10 @@ if (import.meta.env.DEV) {
     initializeSupabase(url, anonKey)
   }
 } else {
-  // In production, auto-detect Vercel or Netlify and fetch from the correct serverless function
-  const getConfigEndpoint = () => {
-    // Vercel sets VERCEL env, Netlify sets NETLIFY env
-    if (typeof process !== 'undefined' && process.env && process.env.VERCEL) {
-      return '/api/get-config';
-    }
-    // Default to Netlify
-    return '/.netlify/functions/get-config';
-  };
+  // In production, always use Netlify serverless function endpoint
   const loadConfig = async () => {
     try {
-      const endpoint = getConfigEndpoint();
-      const response = await fetch(endpoint);
+      const response = await fetch('/.netlify/functions/get-config');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
